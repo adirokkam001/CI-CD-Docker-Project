@@ -27,5 +27,24 @@ pipeline {
                 sh 'docker build -t cicd-docker-project:1.0 .'
             }
         }
+
+        stage('Push Docker Image to ECR') {
+            steps {
+                sh '''
+                    set -e
+
+                    ECR_REGISTRY="552952091041.dkr.ecr.ap-south-1.amazonaws.com"
+                    ECR_REPOSITORY="cicd-docker-project"
+
+                    aws ecr get-login-password --region ap-south-1 \
+                      | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+                    docker tag cicd-docker-project:1.0 \
+                      "$ECR_REGISTRY/$ECR_REPOSITORY:1.0"
+
+                    docker push "$ECR_REGISTRY/$ECR_REPOSITORY:1.0"
+                '''
+            }
+        }
     }
 }
